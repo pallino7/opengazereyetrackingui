@@ -25,12 +25,11 @@ public class EyeTracker
 		   text = bar.nextLine();
 		   String[] vals =  text.split(" ");
 		   System.out.println(vals[0]+" "+vals[1]);
-		   /*try{
-		   	comp.setPosition(Integer.parseInt(vals[0]), Integer.parseInt(vals[1]));
-		   	
+		   try{
+		   		comp.setPosition(Integer.parseInt(vals[0]), Integer.parseInt(vals[1]));
 		   }catch (NumberFormatException nfe){
       			System.out.println("NumberFormatException: " + nfe.getMessage());
-    		}*/
+    	   }
 	    }
     	
 	}
