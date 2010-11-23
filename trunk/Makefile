@@ -1,11 +1,13 @@
-# required libraries: vxl, boost, opencv, gtkmm
+# required libraries: vxl, opencv, boost, gtkmm
 
-VXLDIR = /usr/local/
+VXLDIR = /usr/local
 VERSION = opengazer-0.1.2
-CCPPFLAGS = -Wall -g -O3
-LINKER = -lm -ldl -lvnl -lnetlib -lmvl -lvnl_algo -lvgl -lgthread-2.0
+CPPFLAGS = -Wall -g -O3
+LINKER = -L$(VXLDIR)/lib -L/usr/local/lib -lm -ldl -lvnl -lmvl -lvnl_algo -lvgl -lgthread-2.0 -lnetlib
+
 # change the following line if your vxl library is installed elsewhere
-INCLUDES = -I{/usr/local/include/vxl,/opt/local/include}{,/core,/vcl,/contrib/oxl}
+INCLUDES = $(foreach prefix,/usr/local/include $(VXLDIR)/include $(VXLDIR)/include/vxl, \
+		$(foreach suffix,/core /vcl /contrib/oxl,-I$(prefix)$(suffix)))
 
 # -I/usr/include/ffmpeg
 # -lcv0.9.7 -lhighgui0.9.7
