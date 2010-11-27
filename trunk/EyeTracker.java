@@ -2,9 +2,13 @@ import java.util.Scanner;
 import javax.swing.*;
 import java.awt.Dimension;
 import java.awt.BorderLayout;
+import java.awt.event.*;
 
 public class EyeTracker
 {
+        // If true, use mouse input instead of opengazer.
+        boolean debug = false;
+
 	public EyeTracker(){
 	
 		// Initialize the overall JFrame window
@@ -13,7 +17,7 @@ public class EyeTracker
 	 	frame.setLayout(new BorderLayout());
 	 	
 	 	// Create the new EyeTrackerComponent
-	 	EyeTrackerComponent comp = new EyeTrackerComponent();
+	 	final EyeTrackerComponent comp = new EyeTrackerComponent();
 	 	comp.setPreferredSize(new Dimension(frame.getWidth()-20,frame.getHeight()));
 	 	
 	 	// Add the eyeTrackerComponent to a scrollable area
@@ -26,10 +30,26 @@ public class EyeTracker
 	 
 	 	// This part gets the output from stdout from the opengazer output and parses it
 	 	// in order to use it as input for this program.
+                if(debug)
+                {
+                    comp.addMouseMotionListener(new MouseMotionAdapter(){
+                        public void mouseMoved(MouseEvent e)
+                        {
+                            try
+                            {
+                                comp.setPosition(e.getX(), e.getY());
+                            }catch (NumberFormatException nfe){
+                                System.out.println("NumberFormatException: " + nfe.getMessage());
+                            }
+                        }
+                    });
+                }
+                else
+                {
 		Scanner bar = new Scanner(System.in);
 		String text;
 		while( bar.hasNext() )
-	    {
+                {
 		   text = bar.nextLine();
 		   String[] vals =  text.split(" ");
 		   System.out.println(vals[0]+" "+vals[1]);
@@ -37,8 +57,9 @@ public class EyeTracker
 		   		comp.setPosition(Integer.parseInt(vals[0]), Integer.parseInt(vals[1]));
 		   }catch (NumberFormatException nfe){
       			System.out.println("NumberFormatException: " + nfe.getMessage());
-    	   }
-	    }
+                   }
+                 }
+                }
     	
 	}
     
