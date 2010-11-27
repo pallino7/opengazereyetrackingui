@@ -1,25 +1,33 @@
 import java.util.Scanner;
 import javax.swing.*;
 import java.awt.Dimension;
+import java.awt.BorderLayout;
 
 public class EyeTracker
 {
 	public EyeTracker(){
 	
-		// **** Initialize the overall JFrame window
+		// Initialize the overall JFrame window
 		JFrame frame = new JFrame("Courier Demo");
-	 	frame.setSize(800,500);
-	 	frame.setMinimumSize(new Dimension(1440,900));
+	 	frame.setSize(1400,800);
+	 	frame.setLayout(new BorderLayout());
 	 	
+	 	// Create the new EyeTrackerComponent
 	 	EyeTrackerComponent comp = new EyeTrackerComponent();
-	 	/*JTextField status = new JTextField("Welcome to Courier");
-	 	status.setSize(20,50);*/
-	 	frame.add(comp);
+	 	comp.setPreferredSize(new Dimension(frame.getWidth()-20,frame.getHeight()));
+	 	
+	 	// Add the eyeTrackerComponent to a scrollable area
+	 	JScrollPane scrollArea = new JScrollPane(comp, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED );	 	
+	 	scrollArea.setPreferredSize(new Dimension(frame.getWidth(),frame.getHeight()));
+
+		// Add the scroll area to the main frame
+	 	frame.add(scrollArea, BorderLayout.CENTER);
 	 	frame.setVisible(true);
 	 
+	 	// This part gets the output from stdout from the opengazer output and parses it
+	 	// in order to use it as input for this program.
 		Scanner bar = new Scanner(System.in);
 		String text;
-
 		while( bar.hasNext() )
 	    {
 		   text = bar.nextLine();
