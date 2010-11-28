@@ -14,6 +14,7 @@ public class EyeTrackerComponent extends JPanel implements Scrollable{
 	private String text;
 	private Boolean isHighlighted;
 	private Rectangle parentSize;
+	private int maxUnitIncrement = 1;
 	
 	public EyeTrackerComponent(String textFromFile) {
 		super(new BorderLayout());
@@ -102,6 +103,7 @@ public class EyeTrackerComponent extends JPanel implements Scrollable{
         disolveTimer.setRepeats(false);
 	}
 	
+	// The position of the eye as detected from opengazer
 	public void setPosition(int setX, int setY) {
 		if(!isHighlighted){
 			x = setX;
@@ -110,6 +112,12 @@ public class EyeTrackerComponent extends JPanel implements Scrollable{
 			drawListY.add(y);
 			repaint();
 		}
+	}
+	
+	// The position of the eye as detected from opengazer
+	public void updateText(String newText) {
+		text = newText;
+		repaint();
 	}
 	
 	public Dimension getPreferredScrollableViewportSize() {
@@ -148,8 +156,6 @@ public class EyeTrackerComponent extends JPanel implements Scrollable{
                    - currentPosition;
         }
     }
-    
-    private int maxUnitIncrement = 1;
     
     public int getScrollableBlockIncrement(Rectangle visibleRect,
                                            int orientation,
