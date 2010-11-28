@@ -6,7 +6,8 @@ GazeArea::GazeArea(int argc, char **argv,
 		   const vector<shared_ptr<AbstractStore> > &stores):
     lastPointId(-1), gazetracker(argc, argv, stores)
 {
-    set_size_request(gazetracker.canvas->width, gazetracker.canvas->height);
+	set_size_request(900, 600);
+    //set_size_request(gazetracker.canvas->width, gazetracker.canvas->height);
     Glib::signal_idle().connect(sigc::mem_fun(*this, &GazeArea::on_idle));
     add_events(Gdk::BUTTON_PRESS_MASK);
     add_events(Gdk::BUTTON_RELEASE_MASK);
