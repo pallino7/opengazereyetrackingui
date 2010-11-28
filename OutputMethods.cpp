@@ -39,8 +39,9 @@ StreamStore::~StreamStore() {
 
 void StreamStore::store(const TrackerOutput& output) {
     stream << (int) output.gazepoint.x << " " 
-	   << (int) output.gazepoint.y << " -> "
-	   << output.targetid << endl;
+	<< (int) output.gazepoint.y << endl; 
+		//<< " -> "
+	   //<< output.targetid << endl;
     stream.flush();
 }
 

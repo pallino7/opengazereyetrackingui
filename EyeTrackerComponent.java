@@ -2,6 +2,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.*;
 import java.awt.geom.Rectangle2D;
+import java.awt.event.*;
+import javax.swing.JViewport;
 
 public class EyeTrackerComponent extends JPanel implements Scrollable{
 
@@ -10,83 +12,37 @@ public class EyeTrackerComponent extends JPanel implements Scrollable{
 	private Vector<Integer> drawListX;
 	private Vector<Integer> drawListY;
 	private String text;
+	private Boolean isHighlighted;
+	private Rectangle parentSize;
 	
-	public EyeTrackerComponent() {
+	public EyeTrackerComponent(String textFromFile) {
 		super(new BorderLayout());
 
 		drawListX = new Vector<Integer>();
 		drawListY = new Vector<Integer>();
+		//parentSize = size;
 		this.setOpaque(true);
 		this.setBackground(Color.white);
-		this.setPreferredSize(new Dimension(getWidth(),900));
+		isHighlighted = false;
 		
 		// Test text, this will move out of here eventually
-		text = "Arms, and the man I sing, who, forc'd by fate, "+ 
-				"And haughty Juno's unrelenting hate, "+ 
-				"Expell'd and exil'd, left the Trojan shore. \n"+ 
-				"Long labors, both by sea and land, he bore, \n"+ 
-				"And in the doubtful war, before he won \n"+ 
-				"The Latian realm, and built the destin'd town; \n"+ 
-				"His banish'd gods restor'd to rites divine, \n"+
-				"And settled sure succession in his line, \n"+
-				"From whence the race of Alban fathers come, \n"+
-				"And the long glories of majestic Rome. "+
-				"Arms, and the man I sing, who, forc'd by fate, "+ 
-				"And haughty Juno's unrelenting hate, "+ 
-				"Expell'd and exil'd, left the Trojan shore. \n"+ 
-				"Long labors, both by sea and land, he bore, \n"+ 
-				"And in the doubtful war, before he won \n"+ 
-				"The Latian realm, and built the destin'd town; \n"+ 
-				"His banish'd gods restor'd to rites divine, \n"+
-				"And settled sure succession in his line, \n"+
-				"From whence the race of Alban fathers come, \n"+
-				"And the long glories of majestic Rome. "+
-				"Arms, and the man I sing, who, forc'd by fate, "+ 
-				"And haughty Juno's unrelenting hate, "+ 
-				"Expell'd and exil'd, left the Trojan shore. \n"+ 
-				"Long labors, both by sea and land, he bore, \n"+ 
-				"And in the doubtful war, before he won \n"+ 
-				"The Latian realm, and built the destin'd town; \n"+ 
-				"His banish'd gods restor'd to rites divine, \n"+
-				"And settled sure succession in his line, \n"+
-				"From whence the race of Alban fathers come, \n"+
-				"And the long glories of majestic Rome. "+
-				"Arms, and the man I sing, who, forc'd by fate, "+ 
-				"And haughty Juno's unrelenting hate, "+ 
-				"Expell'd and exil'd, left the Trojan shore. \n"+ 
-				"Long labors, both by sea and land, he bore, \n"+ 
-				"And in the doubtful war, before he won \n"+ 
-				"The Latian realm, and built the destin'd town; \n"+ 
-				"His banish'd gods restor'd to rites divine, \n"+
-				"And settled sure succession in his line, \n"+
-				"From whence the race of Alban fathers come, \n"+
-				"And the long glories of majestic Rome. "+
-				"Arms, and the man I sing, who, forc'd by fate, "+ 
-				"And haughty Juno's unrelenting hate, "+ 
-				"Expell'd and exil'd, left the Trojan shore. \n"+ 
-				"Long labors, both by sea and land, he bore, \n"+ 
-				"And in the doubtful war, before he won \n"+ 
-				"The Latian realm, and built the destin'd town; \n"+ 
-				"His banish'd gods restor'd to rites divine, \n"+
-				"And settled sure succession in his line, \n"+
-				"From whence the race of Alban fathers come, \n"+
-				"And the long glories of majestic Rome. ";
-		
+		text = textFromFile;
 	}
 	
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		
+		int scrollOffset = (int)((JViewport)this.getParent()).getViewPosition().getY();
 		// Draw the circle that follows the eyes
 		g.setColor(Color.black);
-		g.drawOval(x, y, 30, 30);
+		g.drawOval(x, y + scrollOffset, 30, 30);
 		
 		// Draw the polyline that shows the path drawn by the eyes
 		int[] pointsX = new int[drawListX.size()];
 		int[] pointsY = new int[drawListY.size()];
 		for(int i = 0; i < drawListX.size(); i++){
 			pointsX[i] = (Integer)drawListX.get(i);
-			pointsY[i] = (Integer)drawListY.get(i);
+			pointsY[i] = (Integer)drawListY.get(i) + scrollOffset;
 		}
 		g.drawPolyline(pointsX, pointsY, drawListX.size());
 		
@@ -113,7 +69,7 @@ public class EyeTrackerComponent extends JPanel implements Scrollable{
 				Rectangle2D rect = ftmet.getStringBounds(splitText[j], g);
 				rect.setRect(text_x+size, text_y+liney, rect.getWidth(), rect.getHeight());
 				HighlightableWord s = new HighlightableWord(splitText[j], rect);
-				if(rect.contains((double)x, (double)y)){
+				if(rect.contains((double)x, (double)y+scrollOffset) && isHighlighted){
 					g.setColor(Color.blue);
 					g.fillRect((int)rect.getX(), (int)rect.getY(), (int)rect.getWidth(), (int)rect.getHeight()+5);
 				}
@@ -125,12 +81,35 @@ public class EyeTrackerComponent extends JPanel implements Scrollable{
 		
 	}
 	
-	public void setPosition(int setX, int setY) {
-		x = setX;
-		y = setY;
-		drawListX.add(x);
-		drawListY.add(y);
+	// Set the boolean for highlighting the word that corresponds to the current x, y position to true.
+	public void highlightWord(){
+		isHighlighted = true;
 		repaint();
+	}
+	
+	// Unhighlight the word that was previous highlighted after a second delay. This event occurs when
+	// the user changes focus from the current window. In order for the user to understand where they
+	// last left off, we leave the highlight for a second before disappearing.
+	public void unhighlightWord(){
+		javax.swing.Timer disolveTimer = new javax.swing.Timer(1000, new ActionListener() {
+          public void actionPerformed(ActionEvent e) {
+              	isHighlighted = false;
+				repaint();
+          }
+        });
+        disolveTimer.setInitialDelay(1000);
+        disolveTimer.start();
+        disolveTimer.setRepeats(false);
+	}
+	
+	public void setPosition(int setX, int setY) {
+		if(!isHighlighted){
+			x = setX;
+			y = setY;
+			drawListX.add(x);
+			drawListY.add(y);
+			repaint();
+		}
 	}
 	
 	public Dimension getPreferredScrollableViewportSize() {
