@@ -55,14 +55,14 @@ public class EyeTrackerComponent extends JPanel implements Scrollable{
 		// Draw the circle that follows the eyes
 		g.setColor(Color.black);
                 if(!drawList.isEmpty())
-		g.drawOval(last.x, last.y + scrollOffset, 30, 30);
+		g.drawOval(last.x, last.y-scrollOffset, 30, 30);
 		
 		// Draw the polyline that shows the path drawn by the eyes
 		for(int i = 1; i < drawList.size(); i++){
 			g.drawLine(drawList.get(i-1).x,
-                                drawList.get(i-1).y + scrollOffset,
+                                drawList.get(i-1).y - scrollOffset,
                                 drawList.get(i).x,
-                                drawList.get(i).y + scrollOffset);
+                                drawList.get(i).y - scrollOffset);
 		}
 		
 		// This draws the text into the component. 
@@ -106,7 +106,8 @@ public class EyeTrackerComponent extends JPanel implements Scrollable{
 	public void setPosition(int setX, int setY) {
                 if(isHighlighted)
                         return;
-                GazePoint pt = new GazePoint(setX, setY, System.currentTimeMillis());
+                int scrollOffset = (int)((JViewport)this.getParent()).getViewPosition().getY();
+                GazePoint pt = new GazePoint(setX, setY+scrollOffset, System.currentTimeMillis());
                 last = pt;
 		drawList.add(pt);
                 status.setText("Status: " + detector.status + ";Score: " + detector.update(drawList));
