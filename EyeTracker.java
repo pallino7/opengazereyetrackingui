@@ -8,31 +8,60 @@ import java.awt.Rectangle;
 import java.util.*;
 import java.awt.*;
 
-public class EyeTracker
+// Our implementation of various methods for using eye gaze in a text reader.
+public class EyeTracker implements ActionListener
 {
         // If true, use mouse input instead of opengazer.
         boolean debug = true;
+
+        // This is the main component where everything gets drawn and rendered.
         private EyeTrackerComponent comp = null;
+
+        // Frame, and code that handles scrolling.
         private JFrame frame;
         private JScrollPane scrollArea;
+
+        // For choosing our test texts.
         private JPanel navigation;
+
+        // This takes the information from the input and detects if reading is
+        // happening.
         private ReadDetector detector;
-        private GazePoint last;
+
+        // This keeps track of where we looked.
         private LinkedList<GazePoint> drawList;
+
+        // How much have we read?
         private int readingCount = 0;
+
+        // Have we looked at the options on top of the screen?
         private Boolean gazedComboBox = false;
+
+        // Are we scrolling down?
+        private boolean scrolldown;
+
+        // How much scrolling have we done?
+        private int scrolliter;
+
+        // timer to animate scrolling.
+        private javax.swing.Timer timer;
 		
 
 	public EyeTracker(){
 	
 		detector = new ReadDetector();
 		drawList = new LinkedList<GazePoint>();
+                timer = new javax.swing.Timer(33,this);
+                scrolldown = true;
+                scrolliter = 0;
 	
 		// Initialize the overall JFrame window
 		frame = new JFrame("EyeTracker Demo");
                 frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	 	frame.setSize(1400,800);
 	 	frame.setLayout(new BorderLayout());
+
+                // Highlight the last word we were reading if we lose focus.
 	 	frame.addWindowFocusListener( new WindowFocusListener(){
 	 		public void windowLostFocus(WindowEvent e) {
 	 			if(comp != null){
@@ -48,6 +77,8 @@ public class EyeTracker
     	
     	navigation = new JPanel();
     	JButton calibration = new JButton("Calibration Ended");
+
+        // This will clear the point list. For our own testing purposes.
     	calibration.addActionListener(new ActionListener(){
     		public void actionPerformed(ActionEvent event){
     		 drawList = new LinkedList<GazePoint>();
@@ -56,7 +87,8 @@ public class EyeTracker
     		 navigation.setBackground(Color.gray);
     		 }
    		});
-    	
+
+                // Choose among our sample texts.
 	 	String[] files = {"BenjaminButton.txt", "Emma.txt"};
 	 	JComboBox selectText = new JComboBox(files);
 	 	navigation.add(calibration, BorderLayout.NORTH);
@@ -70,7 +102,8 @@ public class EyeTracker
         		String petName = (String)cb.getSelectedItem();
         	}
 	 	});
-	 	
+
+                // Load our sample texts.
 	 	String testText = "";
 	 	try{
 	 		FileReader fro = new FileReader( "ExampleTexts/BenjaminButton.txt" );
@@ -105,7 +138,7 @@ public class EyeTracker
                         {
                             try
                             {
-                               eyeEventAt(e.getX(), e.getY());
+                                eyeEventAt(e.getX(), e.getY());
                             }catch (NumberFormatException nfe){
                                 System.out.println("NumberFormatException: " + nfe.getMessage());
                             }
@@ -114,41 +147,47 @@ public class EyeTracker
                 }
                 else
                 {
-		Scanner bar = new Scanner(System.in);
-		String text;
-		while( bar.hasNext() )
-                {
-		   text = bar.nextLine();
-		   String[] vals =  text.split(" ");
-		   System.out.println(vals[0]+" "+vals[1]);
-		   try{
-		   		eyeEventAt(Integer.parseInt(vals[0]), Integer.parseInt(vals[1]));
-		   		
-		   }catch (NumberFormatException nfe){
-      			System.out.println("NumberFormatException: " + nfe.getMessage());
-                   }
-                 }
+                    // We are using opengazer!
+                    Scanner bar = new Scanner(System.in);
+                    String text;
+                    while( bar.hasNext() )
+                        {
+                           text = bar.nextLine();
+                           String[] vals =  text.split(" ");
+                           System.out.println(vals[0]+" "+vals[1]);
+                           try{
+                                eyeEventAt(Integer.parseInt(vals[0]), Integer.parseInt(vals[1]));
+
+                           }catch (NumberFormatException nfe){
+                                System.out.println("NumberFormatException: " + nfe.getMessage());
+                           }
+                     }
                 }
     	
 	}
-	
+
+        // This handles the event of receiving input at coordinate x, y.
 	public void eyeEventAt(int x, int y){
 
+                // Where is the scrollbar now?
                 int scrollValue = scrollArea.getVerticalScrollBar().getValue();
 
                 // Scroll the scroll pane if the eye position is at the very bottom of the screen.
                 if(y > (frame.getHeight()/7)*6
                         && detector.status == ReadDetector.Status.Reading){
-                        scrollArea.getVerticalScrollBar().setValue(scrollValue+20);
+                        comp.highlightWord();
+                        scrolldown = true;
+                        timer.start();
                 }
                 // Scroll the scroll pane if the eye position is at the very top of the screen.
                 if(y < scrollValue+((frame.getHeight()/7)*2)
                         && detector.status == ReadDetector.Status.Reading){
-                        scrollArea.getVerticalScrollBar().setValue(scrollValue-20);
+                        comp.highlightWord();
+                        scrolldown = false;
+                        timer.start();
                 }
 
                 GazePoint pt = new GazePoint(x, y+scrollValue, System.currentTimeMillis());
-                last = pt;
                 drawList.add(pt);
                 if(detector.status.toString() == "Reading"){
                         readingCount++;
@@ -175,9 +214,28 @@ public class EyeTracker
                         navigation.setBackground(Color.blue);
                 }
 	}
-    
+
+    public void actionPerformed(ActionEvent e) {
+            if(scrolliter > 20)
+            {
+                    scrolliter = 0;
+                    timer.stop();
+                    comp.unhighlightWord();
+                    return;
+            }
+            
+            if(scrolldown)
+                    scrollArea.getVerticalScrollBar().setValue(scrollArea.getVerticalScrollBar().getValue() + 5);
+            else
+                    scrollArea.getVerticalScrollBar().setValue(scrollArea.getVerticalScrollBar().getValue() - 5);
+            scrolliter++;
+            comp.repaint();
+    }
+
     public static void main(String[] args )
     {
    		new EyeTracker();
     }
+
+
 }
