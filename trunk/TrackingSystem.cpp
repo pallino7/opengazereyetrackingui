@@ -39,7 +39,7 @@ TrackingSystem::TrackingSystem(CvSize size):
 void TrackingSystem::doprocessing(const IplImage *frame, 
 				  IplImage *image) 
 {
-    tracker.track(frame, 2);
+    tracker.track(frame, 4);
     if (tracker.countactivepoints() < 4) {
 	tracker.draw(image);
 	throw TrackingException();

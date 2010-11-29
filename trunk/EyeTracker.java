@@ -9,14 +9,16 @@ import java.awt.Rectangle;
 public class EyeTracker
 {
         // If true, use mouse input instead of opengazer.
-        boolean debug = true;
+        boolean debug = false;
         private EyeTrackerComponent comp = null;
+        private JFrame frame;
+        private JScrollPane scrollArea;
 
 	public EyeTracker(){
 	
 		// Initialize the overall JFrame window
-		JFrame frame = new JFrame("EyeTracker Demo");
-                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame = new JFrame("EyeTracker Demo");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	 	frame.setSize(1400,800);
 	 	frame.setLayout(new BorderLayout());
 	 	frame.addWindowFocusListener( new WindowFocusListener(){
@@ -66,7 +68,7 @@ public class EyeTracker
 	 	comp.setPreferredSize(new Dimension(frame.getWidth()-20,1400));
 	 	
 	 	// Add the eyeTrackerComponent to a scrollable area
-	 	JScrollPane scrollArea = new JScrollPane(comp, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED );	 	
+	 	scrollArea = new JScrollPane(comp, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED );	 	
 	 	scrollArea.setPreferredSize(new Dimension(frame.getWidth(),frame.getHeight()));
 
 		// Add the scroll area to the main frame
@@ -82,7 +84,19 @@ public class EyeTracker
                         {
                             try
                             {
-                                comp.setPosition(e.getX(), e.getY());
+                                int x = e.getX();
+		   						int y = e.getY();
+		   						comp.setPosition(x, y);
+		   		
+		   						// Scroll the scroll pane if the eye position is at the very bottom of the screen.
+		   						if(y > (frame.getHeight()/7)*6){
+		   							scrollArea.getVerticalScrollBar().setValue(scrollArea.getVerticalScrollBar().getValue()+20);
+		   						}
+		   						// Scroll the scroll pane if the eye position is at the very top of the screen.
+		   						if(y < scrollArea.getVerticalScrollBar().getValue()+(frame.getHeight()/7)*2){
+		   							System.out.println("at top: "+y+" "+scrollArea.getVerticalScrollBar().getValue()+(frame.getHeight()/7)*2);
+		   							scrollArea.getVerticalScrollBar().setValue(scrollArea.getVerticalScrollBar().getValue()-20);
+		   						}
                             }catch (NumberFormatException nfe){
                                 System.out.println("NumberFormatException: " + nfe.getMessage());
                             }
@@ -106,6 +120,10 @@ public class EyeTracker
 		   		// Scroll the scroll pane if the eye position is at the very bottom of the screen.
 		   		if(y > (frame.getHeight()/7)*6){
 		   			scrollArea.getVerticalScrollBar().setValue(scrollArea.getVerticalScrollBar().getValue()+20);
+		   		}
+		   		// Scroll the scroll pane if the eye position is at the very top of the screen.
+		   		if(y < (frame.getHeight()/7)*3){
+		   			scrollArea.getVerticalScrollBar().setValue(scrollArea.getVerticalScrollBar().getValue()-20);
 		   		}
 		   		
 		   }catch (NumberFormatException nfe){
