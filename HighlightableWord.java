@@ -4,9 +4,9 @@ import java.util.*;
 
 public class HighlightableWord {
 
-	private String word;
-	private Rectangle2D rect;
-	private Color color;
+	public String word;
+	public Rectangle2D rect;
+	public Color color;
 	
 	public HighlightableWord(String txt, Rectangle2D rectangle){
 		word = txt;

@@ -18,9 +18,9 @@ public class EyeTracker
         private JPanel navigation;
         private ReadDetector detector;
         private GazePoint last;
-		private LinkedList<GazePoint> drawList;
-		private int readingCount = 0;
-		private Boolean gazedComboBox = false;
+        private LinkedList<GazePoint> drawList;
+        private int readingCount = 0;
+        private Boolean gazedComboBox = false;
 		
 
 	public EyeTracker(){
@@ -30,7 +30,7 @@ public class EyeTracker
 	
 		// Initialize the overall JFrame window
 		frame = new JFrame("EyeTracker Demo");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	 	frame.setSize(1400,800);
 	 	frame.setLayout(new BorderLayout());
 	 	frame.addWindowFocusListener( new WindowFocusListener(){
@@ -134,43 +134,45 @@ public class EyeTracker
 	
 	public void eyeEventAt(int x, int y){
 
-		   		int scrollValue = scrollArea.getVerticalScrollBar().getValue();
-		   		
-		   		// Scroll the scroll pane if the eye position is at the very bottom of the screen.
-		   		if(y > (frame.getHeight()/7)*6){
-		   			scrollArea.getVerticalScrollBar().setValue(scrollValue+20);
-		   		}
-		   		// Scroll the scroll pane if the eye position is at the very top of the screen.
-		   		if(y < scrollValue+((frame.getHeight()/7)*2)){
-		   			scrollArea.getVerticalScrollBar().setValue(scrollValue-20);
-		   		}
-		   		
-		   		GazePoint pt = new GazePoint(x, y+scrollValue, System.currentTimeMillis());
-                last = pt;
-				drawList.add(pt);
-				if(detector.status.toString() == "Reading"){
-                	readingCount++;
+                int scrollValue = scrollArea.getVerticalScrollBar().getValue();
+
+                // Scroll the scroll pane if the eye position is at the very bottom of the screen.
+                if(y > (frame.getHeight()/7)*6
+                        && detector.status == ReadDetector.Status.Reading){
+                        scrollArea.getVerticalScrollBar().setValue(scrollValue+20);
                 }
-				comp.updateNewPoint(pt, detector.status+"", detector.update(drawList), readingCount);
-				
-				// Navigation bar alert feature
-				
-				// If the user looks at the top part of the screen, then they have glanced at the choices
-		   		// for texts and we don't need to alert them (set gazedComboBox to true). Also, if the 
-		   		// alert has been activated, at this point we can revert the navigation bar to its original
-		   		// color since the user has seen the comboBox.
-		   		if(y < scrollValue+((frame.getHeight()/7))){
-		   			navigation.setBackground(Color.gray);
-		   			gazedComboBox = true;
-		   		}
-		   		
-				// Change the background of the navigation bar if the user has been scanning for more than 10secs 
-				// and the user hasn't looked at the top part of the screen yet. In this situation, they might
-				// the text they are looking at might not be the one they want to be reading.
-                if(readingCount < 100 && 
-                	(drawList.getLast().time - drawList.getFirst().time) > 5000 &&
-                	!gazedComboBox){
-                	navigation.setBackground(Color.blue);
+                // Scroll the scroll pane if the eye position is at the very top of the screen.
+                if(y < scrollValue+((frame.getHeight()/7)*2)
+                        && detector.status == ReadDetector.Status.Reading){
+                        scrollArea.getVerticalScrollBar().setValue(scrollValue-20);
+                }
+
+                GazePoint pt = new GazePoint(x, y+scrollValue, System.currentTimeMillis());
+                last = pt;
+                drawList.add(pt);
+                if(detector.status.toString() == "Reading"){
+                        readingCount++;
+                }
+                comp.updateNewPoint(pt, detector.status+"", detector.update(drawList), readingCount);
+
+                // Navigation bar alert feature
+
+                // If the user looks at the top part of the screen, then they have glanced at the choices
+                // for texts and we don't need to alert them (set gazedComboBox to true). Also, if the
+                // alert has been activated, at this point we can revert the navigation bar to its original
+                // color since the user has seen the comboBox.
+                if(y < scrollValue+((frame.getHeight()/7))){
+                        navigation.setBackground(Color.gray);
+                        gazedComboBox = true;
+                }
+
+                // Change the background of the navigation bar if the user has been scanning for more than 10secs
+                // and the user hasn't looked at the top part of the screen yet. In this situation, they might
+                // the text they are looking at might not be the one they want to be reading.
+                if(readingCount < 100 &&
+                        (drawList.getLast().time - drawList.getFirst().time) > 5000 &&
+                        !gazedComboBox){
+                        navigation.setBackground(Color.blue);
                 }
 	}
     

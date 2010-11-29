@@ -12,6 +12,7 @@ import java.lang.Math.*;
  * @author Denis
  */
 public class ReadDetector {
+        private static int NOISETHRESH = 30;
         private static int SMALLTHRESH = 100;
         private static int MEDTHRESH = 200;
         public enum Status{Scanning, Reading};
@@ -24,25 +25,14 @@ public class ReadDetector {
 
         public int update(LinkedList<GazePoint> points)
         {
-                if(points.size() < 3)
+                if(points.size() < 5)
                         return 0;
-                // This just tracks how fast we are receiving events.
-                int sum = 0;
-                int i = java.lang.Math.max(0, points.size()-30);
-                long lasttime = points.get(i).time;
-                for(; i < points.size(); i++)
-                {
-                        sum += points.get(i).time - lasttime;
-                        lasttime = points.get(i).time;
-                }
-
-                LinkedList <Integer> scores = new LinkedList<Integer>();
 
                 // Look over the points in the last 500 ms.
 
                 int score = 0;
                 for(int j = (points.size()-1)
-                        ;j >= 0 && (points.getLast().time - points.get(j).time) < 500
+                        ;j >= points.size()-5
                         ; j--)
                 {
                         // This is the last point. We need two.
@@ -52,6 +42,10 @@ public class ReadDetector {
                         GazePoint pt2 = points.get(j+1);
                         int dx = pt2.x - pt1.x;
                         int dy = pt2.y - pt1.y;
+
+                        if(java.lang.Math.abs(dx) < NOISETHRESH) dx = 0;
+                        if(java.lang.Math.abs(dy) < NOISETHRESH) dy = 0;
+
                         if(dx < 0)
                                 if(dx<SMALLTHRESH)
                                         if(dx<MEDTHRESH)
@@ -87,11 +81,9 @@ public class ReadDetector {
                                                 score -= 99;
                                 else
                                         score -= 5;
-                        
-                        scores.push(score);
                 }
 
-                if(score > 30)
+                if(score >= 30)
                         status = Status.Reading;
                 else
                         status = Status.Scanning;
