@@ -15,6 +15,7 @@ public class EyeTrackerComponent extends JPanel implements Scrollable{
         private String text;
         private JLabel status;
         //private ReadDetector detector;
+        private HighlightableWord hword;
         private boolean isHighlighted;
         private boolean initialized;
         private Rectangle parentSize;
@@ -80,44 +81,60 @@ public class EyeTrackerComponent extends JPanel implements Scrollable{
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
 
+                Graphics2D g2 = (Graphics2D) g;
+
                 int scrollOffset = (int)((JViewport)this.getParent()).getViewPosition().getY();
 		// Draw the circle that follows the eyes
-		g.setColor(Color.black);
+		g2.setColor(Color.black);
                 if(!drawList.isEmpty())
-		g.drawOval(last.x, last.y-scrollOffset, 30, 30);
+		g2.drawOval(last.x, last.y-scrollOffset, 30, 30);
 
 		// Draw the polyline that shows the path drawn by the eyes
 		for(int i = 1; i < drawList.size(); i++){
-			g.drawLine(drawList.get(i-1).x,
+			g2.drawLine(drawList.get(i-1).x,
                                 drawList.get(i-1).y - scrollOffset,
                                 drawList.get(i).x,
                                 drawList.get(i).y - scrollOffset);
 		}
 
-                if(!initialized) initializePaint(g);
+                if(!initialized) initializePaint(g2);
 
                 Font font = new Font("Verdana", Font.BOLD, 24);
-   		g.setFont(font);
+                Font saved = g2.getFont();
+   		g2.setFont(font);
 
                 for(int i = 0; i < words.size(); i++)
                 {
                         Rectangle2D rect = words.get(i).rect;
                         String word = words.get(i).word;
-                        if(last != null && rect.contains((double)last.x, (double)last.y+scrollOffset) && isHighlighted){
-                        g.setColor(Color.blue);
-                        g.fillRect((int)rect.getX(), (int)rect.getY(), (int)rect.getWidth(), (int)rect.getHeight()+5);
-                        }
-                        g.setColor(Color.black);
-                        g.drawString(word, (int) rect.getX(), (int) rect.getY());
+                        g2.drawString(word, (int) rect.getX(), (int) rect.getY());
                 }
-		
+
+                if(hword != null && isHighlighted){
+                        g.setColor(Color.blue);
+                        g.fillRect((int)hword.rect.getX(), (int)hword.rect.getY(), (int)hword.rect.getWidth(), (int)hword.rect.getHeight());
+                }
 	}
 	
 	public void updateNewPoint(GazePoint pt, String statusVal, int accuracy, int readingCount) {
                 if(isHighlighted)
                         return;
                 last = pt;
-				drawList.add(pt);
+                drawList.add(pt);
+
+                // Update highlighted word
+                if(statusVal == "Reading" && initialized)
+                {
+                        for(int i = 0; i < words.size(); i++)
+                        {
+                                int scrollOffset = (int)((JViewport)this.getParent()).getViewPosition().getY();
+                                Rectangle2D rect = words.get(i).rect;
+                                rect.setRect(rect.getX(), rect.getY()-scrollOffset, rect.getWidth(), rect.getHeight());
+                                if(rect.contains((double)pt.x, (double)pt.y)) hword = words.get(i);
+
+                        }
+                }
+
                 status.setText("Status: " + statusVal + ";Score: " + accuracy+" reading count: "+readingCount);
                 repaint();
     }
