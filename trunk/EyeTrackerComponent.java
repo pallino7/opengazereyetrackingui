@@ -7,42 +7,29 @@ import javax.swing.JViewport;
 
 public class EyeTrackerComponent extends JPanel implements Scrollable{
 
-        public class GazePoint
-        {
-                public int x;
-                public int y;
-                public long time;
-
-                public GazePoint(int a, int b, long t)
-                {
-                        x = a;
-                        y = b;
-                        time = t;
-                }
-        }
-
         private GazePoint last;
-	private LinkedList<GazePoint> drawList;
-	private String text;
+		private LinkedList<GazePoint> drawList;
+		private String text;
         private JLabel status;
-        private ReadDetector detector;
-	private Boolean isHighlighted;
-	private Rectangle parentSize;
-	private int maxUnitIncrement = 1;
+        //private ReadDetector detector;
+		private Boolean isHighlighted;
+		private Rectangle parentSize;
+		private int maxUnitIncrement = 1;
+		//private int readingCount = 0;
 	
 	public EyeTrackerComponent(String textFromFile) {
 		super(new BorderLayout());
-
+		//drawList = points;
 		drawList = new LinkedList<GazePoint>();
-                detector = new ReadDetector();
-                last = null;
+        //detector = new ReadDetector();
+        last = null;
 		//parentSize = size;
 		this.setOpaque(true);
 		this.setBackground(Color.white);
 		isHighlighted = false;
-                status = new JLabel("scanning");
-                this.setLayout(new BorderLayout());
-                this.add(status, BorderLayout.NORTH);
+        status = new JLabel("scanning");
+        this.setLayout(new BorderLayout());
+        this.add(status, BorderLayout.NORTH);
 		
 		// Test text, this will move out of here eventually
 		text = textFromFile;
@@ -103,16 +90,15 @@ public class EyeTrackerComponent extends JPanel implements Scrollable{
 		
 	}
 	
-	public void setPosition(int setX, int setY) {
+	public void updateNewPoint(GazePoint pt, String statusVal, int accuracy, int readingCount) {
                 if(isHighlighted)
                         return;
-                int scrollOffset = (int)((JViewport)this.getParent()).getViewPosition().getY();
-                GazePoint pt = new GazePoint(setX, setY+scrollOffset, System.currentTimeMillis());
                 last = pt;
-		drawList.add(pt);
-                status.setText("Status: " + detector.status + ";Score: " + detector.update(drawList));
+				drawList.add(pt);
+                status.setText("Status: " + statusVal + ";Score: " + accuracy+" reading count: "+readingCount);
                 repaint();
-        }
+    }
+        
 	// Set the boolean for highlighting the word that corresponds to the current x, y position to true.
 	public void highlightWord(){
 		isHighlighted = true;

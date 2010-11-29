@@ -22,7 +22,7 @@ public class ReadDetector {
                 this.status = Status.Scanning;
         }
 
-        public int update(LinkedList<EyeTrackerComponent.GazePoint> points)
+        public int update(LinkedList<GazePoint> points)
         {
                 if(points.size() < 3)
                         return 0;
@@ -48,8 +48,8 @@ public class ReadDetector {
                         // This is the last point. We need two.
                         if(j == points.size()-1) continue;
 
-                        EyeTrackerComponent.GazePoint pt1 = points.get(j);
-                        EyeTrackerComponent.GazePoint pt2 = points.get(j+1);
+                        GazePoint pt1 = points.get(j);
+                        GazePoint pt2 = points.get(j+1);
                         int dx = pt2.x - pt1.x;
                         int dy = pt2.y - pt1.y;
                         if(dx < 0)

@@ -5,16 +5,28 @@ import java.awt.BorderLayout;
 import java.awt.event.*;
 import java.io.*;
 import java.awt.Rectangle;
+import java.util.*;
+import java.awt.*;
 
 public class EyeTracker
 {
         // If true, use mouse input instead of opengazer.
-        boolean debug = false;
+        boolean debug = true;
         private EyeTrackerComponent comp = null;
         private JFrame frame;
         private JScrollPane scrollArea;
+        private JPanel navigation;
+        private ReadDetector detector;
+        private GazePoint last;
+		private LinkedList<GazePoint> drawList;
+		private int readingCount = 0;
+		private Boolean gazedComboBox = false;
+		
 
 	public EyeTracker(){
+	
+		detector = new ReadDetector();
+		drawList = new LinkedList<GazePoint>();
 	
 		// Initialize the overall JFrame window
 		frame = new JFrame("EyeTracker Demo");
@@ -34,13 +46,22 @@ public class EyeTracker
     		}
     	});
     	
-    	JPanel navigation = new JPanel();
-    	JButton button = new JButton("help");
+    	navigation = new JPanel();
+    	JButton calibration = new JButton("Calibration Ended");
+    	calibration.addActionListener(new ActionListener(){
+    		public void actionPerformed(ActionEvent event){
+    		 drawList = new LinkedList<GazePoint>();
+    		 readingCount = 0;
+    		 gazedComboBox = false;
+    		 navigation.setBackground(Color.gray);
+    		 }
+   		});
     	
 	 	String[] files = {"BenjaminButton.txt", "Emma.txt"};
 	 	JComboBox selectText = new JComboBox(files);
+	 	navigation.add(calibration, BorderLayout.NORTH);
 	 	navigation.add(selectText, BorderLayout.NORTH);
-	 	navigation.add(button, BorderLayout.NORTH);
+	 	navigation.setBackground(Color.gray);
 	 	frame.add(navigation, BorderLayout.NORTH);
 	 	
 	 	selectText.addActionListener(new ActionListener(){
@@ -84,19 +105,7 @@ public class EyeTracker
                         {
                             try
                             {
-                                int x = e.getX();
-		   						int y = e.getY();
-		   						comp.setPosition(x, y);
-		   		
-		   						// Scroll the scroll pane if the eye position is at the very bottom of the screen.
-		   						if(y > (frame.getHeight()/7)*6){
-		   							scrollArea.getVerticalScrollBar().setValue(scrollArea.getVerticalScrollBar().getValue()+20);
-		   						}
-		   						// Scroll the scroll pane if the eye position is at the very top of the screen.
-		   						if(y < scrollArea.getVerticalScrollBar().getValue()+(frame.getHeight()/7)*2){
-		   							System.out.println("at top: "+y+" "+scrollArea.getVerticalScrollBar().getValue()+(frame.getHeight()/7)*2);
-		   							scrollArea.getVerticalScrollBar().setValue(scrollArea.getVerticalScrollBar().getValue()-20);
-		   						}
+                               eyeEventAt(e.getX(), e.getY());
                             }catch (NumberFormatException nfe){
                                 System.out.println("NumberFormatException: " + nfe.getMessage());
                             }
@@ -113,18 +122,7 @@ public class EyeTracker
 		   String[] vals =  text.split(" ");
 		   System.out.println(vals[0]+" "+vals[1]);
 		   try{
-		   		int x = Integer.parseInt(vals[0]);
-		   		int y = Integer.parseInt(vals[1]);
-		   		comp.setPosition(x, y);
-		   		
-		   		// Scroll the scroll pane if the eye position is at the very bottom of the screen.
-		   		if(y > (frame.getHeight()/7)*6){
-		   			scrollArea.getVerticalScrollBar().setValue(scrollArea.getVerticalScrollBar().getValue()+20);
-		   		}
-		   		// Scroll the scroll pane if the eye position is at the very top of the screen.
-		   		if(y < (frame.getHeight()/7)*3){
-		   			scrollArea.getVerticalScrollBar().setValue(scrollArea.getVerticalScrollBar().getValue()-20);
-		   		}
+		   		eyeEventAt(Integer.parseInt(vals[0]), Integer.parseInt(vals[1]));
 		   		
 		   }catch (NumberFormatException nfe){
       			System.out.println("NumberFormatException: " + nfe.getMessage());
@@ -132,6 +130,48 @@ public class EyeTracker
                  }
                 }
     	
+	}
+	
+	public void eyeEventAt(int x, int y){
+
+		   		int scrollValue = scrollArea.getVerticalScrollBar().getValue();
+		   		
+		   		// Scroll the scroll pane if the eye position is at the very bottom of the screen.
+		   		if(y > (frame.getHeight()/7)*6){
+		   			scrollArea.getVerticalScrollBar().setValue(scrollValue+20);
+		   		}
+		   		// Scroll the scroll pane if the eye position is at the very top of the screen.
+		   		if(y < scrollValue+((frame.getHeight()/7)*2)){
+		   			scrollArea.getVerticalScrollBar().setValue(scrollValue-20);
+		   		}
+		   		
+		   		GazePoint pt = new GazePoint(x, y+scrollValue, System.currentTimeMillis());
+                last = pt;
+				drawList.add(pt);
+				if(detector.status.toString() == "Reading"){
+                	readingCount++;
+                }
+				comp.updateNewPoint(pt, detector.status+"", detector.update(drawList), readingCount);
+				
+				// Navigation bar alert feature
+				
+				// If the user looks at the top part of the screen, then they have glanced at the choices
+		   		// for texts and we don't need to alert them (set gazedComboBox to true). Also, if the 
+		   		// alert has been activated, at this point we can revert the navigation bar to its original
+		   		// color since the user has seen the comboBox.
+		   		if(y < scrollValue+((frame.getHeight()/7))){
+		   			navigation.setBackground(Color.gray);
+		   			gazedComboBox = true;
+		   		}
+		   		
+				// Change the background of the navigation bar if the user has been scanning for more than 10secs 
+				// and the user hasn't looked at the top part of the screen yet. In this situation, they might
+				// the text they are looking at might not be the one they want to be reading.
+                if(readingCount < 100 && 
+                	(drawList.getLast().time - drawList.getFirst().time) > 5000 &&
+                	!gazedComboBox){
+                	navigation.setBackground(Color.blue);
+                }
 	}
     
     public static void main(String[] args )
