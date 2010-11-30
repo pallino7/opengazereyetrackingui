@@ -8,7 +8,7 @@ import javax.swing.JViewport;
 public class EyeTrackerComponent extends JPanel implements Scrollable{
 
         private GazePoint last;
-        private LinkedList<GazePoint> drawList;
+        public LinkedList<GazePoint> drawList;
 
         private LinkedList<HighlightableWord> words;
 
@@ -82,19 +82,17 @@ public class EyeTrackerComponent extends JPanel implements Scrollable{
 		super.paintComponent(g);
 
                 Graphics2D g2 = (Graphics2D) g;
-
-                int scrollOffset = (int)((JViewport)this.getParent()).getViewPosition().getY();
 		// Draw the circle that follows the eyes
 		g2.setColor(Color.black);
-                if(!drawList.isEmpty())
-		g2.drawOval(last.x, last.y-scrollOffset, 30, 30);
+                if(last != null)
+                        g2.drawOval(last.x, last.y, 30, 30);
 
 		// Draw the polyline that shows the path drawn by the eyes
 		for(int i = 1; i < drawList.size(); i++){
 			g2.drawLine(drawList.get(i-1).x,
-                                drawList.get(i-1).y - scrollOffset,
+                                drawList.get(i-1).y,
                                 drawList.get(i).x,
-                                drawList.get(i).y - scrollOffset);
+                                drawList.get(i).y);
 		}
 
                 if(!initialized) initializePaint(g2);
@@ -126,9 +124,8 @@ public class EyeTrackerComponent extends JPanel implements Scrollable{
                 {
                         for(int i = 0; i < words.size(); i++)
                         {
-                                int scrollOffset = (int)((JViewport)this.getParent()).getViewPosition().getY();
                                 Rectangle2D rect = words.get(i).rect;
-                                rect.setRect(rect.getX(), rect.getY()-scrollOffset, rect.getWidth(), rect.getHeight());
+                                rect.setRect(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight());
                                 if(rect.contains((double)pt.x, (double)pt.y)){ 
                                 	hword = words.get(i);
                                 }
