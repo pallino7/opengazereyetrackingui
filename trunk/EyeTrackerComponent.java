@@ -50,14 +50,14 @@ public class EyeTrackerComponent extends JPanel implements Scrollable{
 		// This draws the text into the component.
 		// We want: to get the size of each word and draw a rectangle the size of each one.
 		int text_x = getWidth()/5;
-		int text_y = 10;
+		int text_y = 30;
 		int size = 0;
 		int liney = 0;
 		String[] splitText = text.split(" ");
 		Font font = new Font("Verdana", Font.BOLD, 24);
    		g.setFont(font);
    		FontMetrics ftmet = g.getFontMetrics();
-                double space = ftmet.getStringBounds(" ", g).getWidth();
+        double space = ftmet.getStringBounds(" ", g).getWidth();
 
 		for(int j = 0; j < splitText.length; j++){
                         if(splitText[j].length() == 0) continue;
@@ -129,7 +129,9 @@ public class EyeTrackerComponent extends JPanel implements Scrollable{
                                 int scrollOffset = (int)((JViewport)this.getParent()).getViewPosition().getY();
                                 Rectangle2D rect = words.get(i).rect;
                                 rect.setRect(rect.getX(), rect.getY()-scrollOffset, rect.getWidth(), rect.getHeight());
-                                if(rect.contains((double)pt.x, (double)pt.y)) hword = words.get(i);
+                                if(rect.contains((double)pt.x, (double)pt.y)){ 
+                                	hword = words.get(i);
+                                }
 
                         }
                 }

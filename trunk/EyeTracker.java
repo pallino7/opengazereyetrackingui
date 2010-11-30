@@ -192,7 +192,7 @@ public class EyeTracker implements ActionListener
                 if(detector.status.toString() == "Reading"){
                         readingCount++;
                 }
-                comp.updateNewPoint(pt, detector.status+"", detector.update(drawList), readingCount);
+                comp.updateNewPoint(pt, detector.status.toString(), detector.update(drawList), readingCount);
 
                 // Navigation bar alert feature
 
