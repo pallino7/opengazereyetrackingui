@@ -28,9 +28,6 @@ public class EyeTracker implements ActionListener
         // happening.
         private ReadDetector detector;
 
-        // This keeps track of where we looked.
-        private LinkedList<GazePoint> drawList;
-
         // How much have we read?
         private int readingCount = 0;
 
@@ -50,7 +47,6 @@ public class EyeTracker implements ActionListener
 	public EyeTracker(){
 	
 		detector = new ReadDetector();
-		drawList = new LinkedList<GazePoint>();
                 timer = new javax.swing.Timer(33,this);
                 scrolldown = true;
                 scrolliter = 0;
@@ -81,7 +77,7 @@ public class EyeTracker implements ActionListener
         // This will clear the point list. For our own testing purposes.
     	calibration.addActionListener(new ActionListener(){
     		public void actionPerformed(ActionEvent event){
-    		 drawList = new LinkedList<GazePoint>();
+                 comp.drawList = new LinkedList<GazePoint>();
     		 readingCount = 0;
     		 gazedComboBox = false;
     		 navigation.setBackground(Color.gray);
@@ -136,9 +132,10 @@ public class EyeTracker implements ActionListener
                     comp.addMouseMotionListener(new MouseMotionAdapter(){
                         public void mouseMoved(MouseEvent e)
                         {
+                            int scrollValue = scrollArea.getVerticalScrollBar().getValue();
                             try
                             {
-                                eyeEventAt(e.getX(), e.getY());
+                                eyeEventAt(e.getX(), e.getY()-scrollValue);
                             }catch (NumberFormatException nfe){
                                 System.out.println("NumberFormatException: " + nfe.getMessage());
                             }
@@ -168,10 +165,6 @@ public class EyeTracker implements ActionListener
 
         // This handles the event of receiving input at coordinate x, y.
 	public void eyeEventAt(int x, int y){
-
-                // Where is the scrollbar now?
-                int scrollValue = scrollArea.getVerticalScrollBar().getValue();
-
                 // Scroll the scroll pane if the eye position is at the very bottom of the screen.
                 if(y > (frame.getHeight()/7)*6
                         && detector.status == ReadDetector.Status.Reading){
@@ -180,27 +173,32 @@ public class EyeTracker implements ActionListener
                         timer.start();
                 }
                 // Scroll the scroll pane if the eye position is at the very top of the screen.
-                if(y < scrollValue+((frame.getHeight()/7)*2)
+                if(y < (frame.getHeight()/7)*2
                         && detector.status == ReadDetector.Status.Reading){
                         comp.highlightWord();
                         scrolldown = false;
                         timer.start();
                 }
 
+
+                // Where is the scrollbar now?
+                int scrollValue = scrollArea.getVerticalScrollBar().getValue();
+
+                // Adjust the point to be in the component coordinates and add it to our draw list.
                 GazePoint pt = new GazePoint(x, y+scrollValue, System.currentTimeMillis());
-                drawList.add(pt);
+
+                comp.updateNewPoint(pt, detector.status.toString(), detector.update(comp.drawList), readingCount);
+
                 if(detector.status.toString() == "Reading"){
                         readingCount++;
                 }
-                comp.updateNewPoint(pt, detector.status.toString(), detector.update(drawList), readingCount);
-
                 // Navigation bar alert feature
 
                 // If the user looks at the top part of the screen, then they have glanced at the choices
                 // for texts and we don't need to alert them (set gazedComboBox to true). Also, if the
                 // alert has been activated, at this point we can revert the navigation bar to its original
                 // color since the user has seen the comboBox.
-                if(y < scrollValue+((frame.getHeight()/7))){
+                if(y < (frame.getHeight()/7)){
                         navigation.setBackground(Color.gray);
                         gazedComboBox = true;
                 }
@@ -209,7 +207,7 @@ public class EyeTracker implements ActionListener
                 // and the user hasn't looked at the top part of the screen yet. In this situation, they might
                 // the text they are looking at might not be the one they want to be reading.
                 if(readingCount < 100 &&
-                        (drawList.getLast().time - drawList.getFirst().time) > 5000 &&
+                        (comp.drawList.getLast().time - comp.drawList.getFirst().time) > 5000 &&
                         !gazedComboBox){
                         navigation.setBackground(Color.blue);
                 }
