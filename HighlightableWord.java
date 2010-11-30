@@ -13,7 +13,4 @@ public class HighlightableWord {
 		rect = rectangle;
 		color = Color.black;
 	}
-	
-	
-
 }
