@@ -48,37 +48,40 @@ public class ReadDetector {
 
                         if(dx < 0)
                                 if(dx<SMALLTHRESH)
-                                        if(dx<MEDTHRESH)
-                                                score -= 99;
+                                        if(dy > 0 && dy < SMALLTHRESH)
+                                                score += 5; // Reading new line.
                                         else
-                                                score -= 5;
+                                                if(dx < MEDTHRESH)
+                                                        score -= 999;
+                                                else
+                                                        score -= 5;
                                 else
                                         score -= 10;
 
                         if(dx > 0)
                                 if(dx > SMALLTHRESH)
                                         if(dx>MEDTHRESH)
-                                                score -= 99;
+                                                score -= 999;
                                         else
                                                 score += 5;
                                 else
                                         score += 10;
 
-                        if(dy < 0)
-                                if(dy<SMALLTHRESH)
-                                        if(dy<MEDTHRESH)
-                                                score -= 99;
+                        if(dy > 0)
+                                if(dy>SMALLTHRESH)
+                                        if(dy>MEDTHRESH)
+                                                score -= 999;
                                         else
                                                 score -= 5;
                                 else
                                         score -= 0;
 
-                        if(dy > 0)
-                                if(dy > SMALLTHRESH)
-                                        if(dy>MEDTHRESH)
-                                                score -= 99;
+                        if(dy < 0)
+                                if(dy < SMALLTHRESH)
+                                        if(dy<MEDTHRESH)
+                                                score -= 999;
                                         else
-                                                score -= 99;
+                                                score -= 999;
                                 else
                                         score -= 5;
                 }

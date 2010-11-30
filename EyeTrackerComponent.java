@@ -100,8 +100,7 @@ public class EyeTrackerComponent extends JPanel implements Scrollable{
                 if(!initialized) initializePaint(g2);
 
                 Font font = new Font("Verdana", Font.BOLD, 24);
-                Font saved = g2.getFont();
-   		g2.setFont(font);
+   		//g2.setFont(font);
 
                 for(int i = 0; i < words.size(); i++)
                 {
