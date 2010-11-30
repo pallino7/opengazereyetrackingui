@@ -99,6 +99,12 @@ public class EyeTrackerComponent extends JPanel implements Scrollable{
                 Font font = new Font("Verdana", Font.BOLD, 24);
    		g2.setFont(font);
 
+				if(hword != null && isHighlighted){
+                        g.setColor(Color.blue);
+                        g.fillRect((int)hword.rect.getX(), (int)hword.rect.getY()-font.getSize(), (int)hword.rect.getWidth(), (int)hword.rect.getHeight());
+                }
+                g.setColor(Color.black);
+                
                 for(int i = 0; i < words.size(); i++)
                 {
                         Rectangle2D rect = words.get(i).rect;
@@ -106,10 +112,7 @@ public class EyeTrackerComponent extends JPanel implements Scrollable{
                         g2.drawString(word, (int) rect.getX(), (int) rect.getY());
                 }
 
-                if(hword != null && isHighlighted){
-                        g.setColor(Color.blue);
-                        g.fillRect((int)hword.rect.getX(), (int)hword.rect.getY(), (int)hword.rect.getWidth(), (int)hword.rect.getHeight());
-                }
+                
 	}
 	
 	public void updateNewPoint(GazePoint pt, String statusVal, int accuracy, int readingCount) {
@@ -155,6 +158,7 @@ public class EyeTrackerComponent extends JPanel implements Scrollable{
 				repaint();
           }
         });
+        hword = null;
         disolveTimer.setInitialDelay(1000);
         disolveTimer.start();
         disolveTimer.setRepeats(false);

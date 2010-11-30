@@ -12,7 +12,7 @@ import java.awt.*;
 public class EyeTracker implements ActionListener
 {
         // If true, use mouse input instead of opengazer.
-        boolean debug = true;
+        boolean debug = false;
 
         // This is the main component where everything gets drawn and rendered.
         private EyeTrackerComponent comp = null;
