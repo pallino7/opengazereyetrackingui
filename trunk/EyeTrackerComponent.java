@@ -18,7 +18,6 @@ public class EyeTrackerComponent extends JPanel implements Scrollable{
         private HighlightableWord hword;
         private boolean isHighlighted;
         private boolean initialized;
-        private Rectangle parentSize;
         private int maxUnitIncrement = 1;
         //private int readingCount = 0;
 	
@@ -57,7 +56,7 @@ public class EyeTrackerComponent extends JPanel implements Scrollable{
 		Font font = new Font("Verdana", Font.BOLD, 24);
    		g.setFont(font);
    		FontMetrics ftmet = g.getFontMetrics();
-        double space = ftmet.getStringBounds(" ", g).getWidth();
+                double space = ftmet.getStringBounds(" ", g).getWidth();
 
 		for(int j = 0; j < splitText.length; j++){
                         if(splitText[j].length() == 0) continue;
@@ -122,15 +121,18 @@ public class EyeTrackerComponent extends JPanel implements Scrollable{
                 // Update highlighted word
                 if(statusVal == "Reading" && initialized)
                 {
+                        double mindistance = Double.MAX_VALUE;
+                        HighlightableWord w = null;
                         for(int i = 0; i < words.size(); i++)
                         {
                                 Rectangle2D rect = words.get(i).rect;
-                                rect.setRect(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight());
-                                if(rect.contains((double)pt.x, (double)pt.y)){ 
-                                	hword = words.get(i);
+                                GazePoint rectpt = new GazePoint((int)rect.getCenterX(), (int)rect.getCenterY(), 0);
+                                if(pt.distance(rectpt) < mindistance){
+                                        mindistance = pt.distance(rectpt);
+                                	w = words.get(i);
                                 }
-
                         }
+                        hword = w;
                 }
 
                 status.setText("Status: " + statusVal + ";Score: " + accuracy+" reading count: "+readingCount);
